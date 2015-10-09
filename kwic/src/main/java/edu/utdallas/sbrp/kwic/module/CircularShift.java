@@ -56,8 +56,10 @@ public class CircularShift implements IndexModule {
 			String[] words = line.split("\\s+");
 			List<String> wordList = new ArrayList<String>(Arrays.asList(words));
 			
+			int numLines = csLines.size();
+			
 			for(int i = 0; i < words.length; ++i) {
-				setLine(i, StringUtil.toString(wordList));
+				setLine(numLines + i, StringUtil.toString(wordList));
 				wordList.add(wordList.remove(0));
 			}
 		}
