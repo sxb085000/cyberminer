@@ -8,6 +8,7 @@ import java.util.Scanner;
 import edu.utdallas.sbrp.kwic.module.Alphabetizer;
 import edu.utdallas.sbrp.kwic.module.CircularShift;
 import edu.utdallas.sbrp.kwic.module.LineStorage;
+import edu.utdallas.sbrp.kwic.module.Output;
 
 
 public class MasterControl {
@@ -17,6 +18,8 @@ public class MasterControl {
 		LineStorage ls = new LineStorage();
 		CircularShift cs = new CircularShift(ls);
 		Alphabetizer alph = new Alphabetizer(cs);
+		Output output = new Output(cs, alph);
+		
 		
 		System.out.println("type lines to create index ($ to indicate new line). Type \"EXIT\" to finish typing:");
 		
