@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>KWIC</title>
+  
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  
+  <style>
+  .horizontal { 
+  	width: 100%;
+  	margin: auto;
+  	text-align:center;
+  }
+  
+  .output-line { width: 100%; margin: auto; text-align:center; margin-top: 1%;}
+  .output-left { width: 48.6%; height:175px; float: left; margin-left: 1%; }
+  .output-right { width: 48.6%; height:175px; float: right; margin-right: 1%; }
+  
+  .cs-help { margin-left: 10px; }
+  .as-help { margin-left: 10px; }
+  
+	.ui-button .ui-icon.index {
+	    background-image: url(index-icon.png);
+	    width: 100%;
+	    height: 100%;
+	}
+	
+	.ui-button.ui-state-hover .ui-icon.index {
+	    background-image: url(index-icon.png);
+	    width: 100%;
+	    height: 100%;
+	}
+	
+  </style>
+  
+  <script>
+  $(function() {
+	  var line;
+	  
+	  var circularShift;
+	  var storeCS = function(response) {
+		  circularShift = response;
+	  }
+	  
+	  var alphabeticShift;
+	  var storeAS = function(response) {
+		  alphabeticShift = response;
+	  }
+	  
+	  $("#build").button({
+	  		icons: {
+	  			primary: "index"
+	  		}
+	  	}).click(function( event ) {
+	  		//FIXME empty nao ta funfando direito
+	  		//clear content div
+	  		$("#outputContent").empty();
+	  		
+	  		//get input value
+	  		var input = $("#input").val().split("$");
+	  		
+	  		//for each line, do:
+	  		for(var i=0; i < input.length; i++) {
+	  			//set line
+	  			line = input[i];
+	  			
+	  			//TODO call CS rest address
+	  			//TODO store CS
+	  			circularShift = line.split(" ");
+	  			
+	  			//TODO call AS rest address
+	  			//TODO store AS
+	  			alphabeticShift = circularShift;
+
+	  			//createLine()
+	  			createLine();
+	  		}
+	  			
+	  		/*	
+	  		$.ajax({
+	  	        type: "POST",
+	  	        url: "rest/linestorage",
+	  	      	data: {
+		  	        firstParam: line
+		  	    },
+		  	    dataType: "text",
+	  	        success: kwicResult,
+	  	        error: function(){
+	  	            console.log("error!");
+	  	        }
+	  	    });
+	  		*/
+	  	});
+	  
+	  function createLine() {
+		  var outputLine = $("<div class='output-line'></div>");
+		  
+		  outputLine.append("<div class='horizontal'><h1>Input: "+line+"</h1></div>");
+		  
+		  var cs = $("<div class='output-left ui-widget-content ui-corner-all'></div>");
+		  cs.append("<h2>Circular Shift<img class='cs-help' src='help-icon.png' title='Repeatedly removes the first word of the line and append it at the end of the line until it reaches the original input.'></h2>");
+		  
+		  var textArea = $("<textarea rows='5' cols='50' readonly='readonly' style='resize:none;'></textarea>");
+		  for(var i=0; i < circularShift.length; i++) {
+			  textArea.append(circularShift[i]+"\n");
+		  }
+		  cs.append(textArea);
+		  
+		  outputLine.append(cs);
+		  
+		  var as = $("<div class='output-right ui-widget-content ui-corner-all'></div>");
+		  as.append("<h2>Alphabetic Shift<img class='as-help' src='help-icon.png' title='Sorts the circular shift output in an ascending alphabetical order.'></h2>");
+		  
+		  textArea = $("<textarea rows='5' cols='50' readonly='readonly' style='resize:none;'></textarea>");
+		  for(var i=0; i < alphabeticShift.length; i++) {
+			  textArea.append(alphabeticShift[i]+"\n");
+		  }
+		  as.append(textArea);
+		  
+		  outputLine.append(as);
+		  
+		  $("#outputContent").append(outputLine);
+	  }
+	  
+  });
+  </script>
+  
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="horizontal">
+	<img src='kwic-logo.png'>
+</div>
+
+<!-- INPUT -->
+<div class="horizontal">
+	<input type="text" id="input" value="" class="ui-widget-content ui-corner-all" style="width:30%;height:32px;">
+	<button id="build">Build</button>
+</div>
+
+<!-- OUTPUT -->
+<div id="outputContent" class="horizontal"></div>
+
+</body>
+</html>
