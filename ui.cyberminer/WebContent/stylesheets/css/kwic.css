@@ -1,0 +1,28 @@
+.horizontal { 
+  	width: 100%;
+  	margin: auto;
+  	text-align:center;
+ }
+ 
+.output-line { width: 100%; margin: auto; text-align:center; margin-top: 1%;}
+.output-left { width: 48.5%; height:300px; float: left; margin-left: 1%; }
+.output-right { width: 48.5%; height:300px; float: right; margin-right: 1%; }
+
+.cs-help { margin-left: 10px; }
+.as-help { margin-left: 10px; }
+ 
+.ui-button .ui-icon.index {
+    background-image: url(../images/index-icon.png);
+    width: 100%;
+    height: 100%;
+}
+
+.ui-button.ui-state-hover .ui-icon.index {
+    background-image: url(../images/index-icon.png);
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background-color: rgb(231,230,230);
+}
