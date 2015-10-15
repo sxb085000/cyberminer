@@ -6,13 +6,17 @@ var CircularShift = function(ls) {
 CircularShift.prototype.setup = function() {
 	var lines = this.ls.getLines();
 	
+	var circularShifts = [];
 	for (var i = 0; i < lines.length; i++) {
-		this.shift(lines[i]);
+		circularShifts = circularShifts.concat(this.shift(lines[i]));
 	}
+	
+	this.setLines(circularShifts);
 };
 
 CircularShift.prototype.shift = function(line) {
-	this.csLines.push(line);
+	var circularShifts = [];
+	circularShifts.push(line);
 	
 	var words = line.split(" ");
 	
@@ -26,14 +30,16 @@ CircularShift.prototype.shift = function(line) {
 		
 		words[words.length - 1] = aux;
 
-		this.csLines.push(words.join(" "));
+		circularShifts.push(words.join(" "));
 	}
-};
-
-CircularShift.prototype.getLine = function(i){
-	return this.csLines[i];
+	
+	return circularShifts;
 };
 
 CircularShift.prototype.getLines = function(){
 	return this.csLines;
+};
+
+CircularShift.prototype.setLines = function(lines){
+	this.csLines = lines;
 };
