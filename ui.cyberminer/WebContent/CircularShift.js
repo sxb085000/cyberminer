@@ -8,7 +8,7 @@ CircularShift.prototype.setup = function() {
 	
 	var circularShifts = [];
 	for (var i = 0; i < lines.length; i++) {
-		circularShifts = circularShifts.concat(this.shift(lines[i]));
+		circularShifts = circularShifts.concat(this.shift(lines[i].trim().replace(/  +/g, ' ')));
 	}
 	
 	this.setLines(circularShifts);
