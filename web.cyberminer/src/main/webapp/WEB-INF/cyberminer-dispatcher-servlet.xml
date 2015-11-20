@@ -20,6 +20,10 @@
     <constructor-arg name="baseURL" value="${solr.url}"/>
   </bean>
   
+<!--   <bean class="edu.utd.sbrp.web.cyberminer.module." id="noiseFilter">
+  </bean>
+ -->  
+    
   <tx:annotation-driven transaction-manager="transactionManager" />
 
   <context:property-placeholder location="classpath:web.cyberminer.properties" />
