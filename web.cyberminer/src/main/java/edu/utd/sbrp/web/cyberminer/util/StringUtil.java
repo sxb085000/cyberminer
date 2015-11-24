@@ -22,4 +22,14 @@ public class StringUtil {
 		return result;
 	}
 	
+	/**
+	 * checks whether string is empty or not. here, empty means either
+	 * null or empty string (after trimming)
+	 * @param value
+	 * @return
+	 */
+	public static boolean isEmpty(String value) {
+		return value == null || value.trim().length() < 1;
+	}
+	
 }

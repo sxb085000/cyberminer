@@ -51,5 +51,9 @@ public class Alphabetizer implements IndexModule {
 		}
 		return line;
 	}
+	
+	public List<String> getLines() {
+		return aLines;
+	}
 
 }
