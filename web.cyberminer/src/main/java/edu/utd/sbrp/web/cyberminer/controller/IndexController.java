@@ -1,6 +1,7 @@
 package edu.utd.sbrp.web.cyberminer.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -14,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.utd.sbrp.web.cyberminer.dao.IndexDao;
 import edu.utd.sbrp.web.cyberminer.domain.KWICIndex;
 import edu.utd.sbrp.web.cyberminer.domain.RestfulResult;
+import edu.utd.sbrp.web.cyberminer.domain.RestfulResultStatus;
 import edu.utd.sbrp.web.cyberminer.module.Alphabetizer;
 import edu.utd.sbrp.web.cyberminer.module.CircularShift;
 import edu.utd.sbrp.web.cyberminer.module.LineStorage;
@@ -31,9 +32,9 @@ public class IndexController {
 	private IndexDao indexDao;
 
 	private final Pattern urlPattern = Pattern.compile("http://\\w+[.]\\w+[.](edu|com|org|net)");
+	private final Pattern descPattern = Pattern.compile("\\w+(( \\w+)|$)*");
 		
 	
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public @ResponseBody RestfulResult createIndex(@RequestBody KWICIndex kwicIndex) {
 		RestfulResult result = new RestfulResult();
@@ -41,7 +42,15 @@ public class IndexController {
 		// check url first
 		if (StringUtil.isEmpty(kwicIndex.getUrl()) || 
 				!urlPattern.matcher(kwicIndex.getUrl()).matches()) {
-			result.fail("url provided (\"" + kwicIndex.getUrl() + "\")is not in the right format. must be in format " + urlPattern.pattern());
+			result.fail("url provided (\"" + kwicIndex.getUrl() + "\")is not in the right format. must be in format " + urlPattern.pattern() + ".");
+		}
+		// then check description
+		if (StringUtil.isEmpty(kwicIndex.getDescription())) {
+			result.fail("field 'description' is required and cannot be empty.");
+		}
+		
+		if(result.getStatus() == RestfulResultStatus.fail) {
+			return result;
 		}
 		
 		// create index
