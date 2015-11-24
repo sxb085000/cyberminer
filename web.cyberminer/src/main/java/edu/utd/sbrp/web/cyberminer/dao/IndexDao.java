@@ -3,11 +3,15 @@ package edu.utd.sbrp.web.cyberminer.dao;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -40,11 +44,34 @@ public class IndexDao {
 	// solr commitWitnin //TODO: parameterize this
 	private final int commitWithinMs = 1000;
 	
+	// default values
 	private final String[] SOLR_RESERVED_WORDS = {"AND", "OR", "NOT"};
 	private final Set<String> reservedWords = new HashSet<String>(Arrays.asList(SOLR_RESERVED_WORDS));
+
+	private final String[] DEFAULT_NOISE_WORDS = {"a", "the", "of"};
+	private Set<String> noiseWords = new HashSet<String>(Arrays.asList(DEFAULT_NOISE_WORDS));
+	public Set<String> noiseWords() {
+		return noiseWords;
+	}
+
 	
 	@Autowired
-	SolrClient solrClient;
+	private SolrClient solrClient;
+
+	@PostConstruct
+	public void init() {
+		// bootstrap noisewords
+		try {
+			noiseWords = getNoiseWords();
+			if(noiseWords.isEmpty()) {
+				updateWords(new HashSet<String>(Arrays.asList(DEFAULT_NOISE_WORDS)), SolrPatchOperation.ADD);
+			}
+		} catch (SolrServerException | IOException e) {
+			System.err.println("Cannot bootstrap noisewords from solr. Default noiseWords " + DEFAULT_NOISE_WORDS + " assumed");
+			e.printStackTrace();
+		}
+	}
+	
 	
 	/**
 	 * here our index building will be batch-mode
@@ -91,6 +118,8 @@ public class IndexDao {
 			
 		SolrQuery solrQuery = new SolrQuery(query.trim());
 		solrQuery.set("df", SOLR_FIELD_DESCRIPTIONS);
+		solrQuery.setStart(offset);
+		solrQuery.setRows(limit);
 		
 		try {
 			QueryResponse response = solrClient.query(solrQuery);
@@ -104,14 +133,76 @@ public class IndexDao {
 		return foundIndices;
 	}
 	
-	public void addNoiseWord(String noiseWord) throws SolrServerException, IOException {
+	public List<String> suggestSearchIndex(String queryString, int limit) {
+		List<String> suggestions = new ArrayList<String>();
+		Set<String> suggestionSet = new HashSet<String>();
+		
+		SolrQuery solrQuery = new SolrQuery("\"" + queryString + "\"*");
+		solrQuery.set("df", SOLR_FIELD_DESCRIPTIONS);
+		solrQuery.setRows(limit);
+
+		try {
+			QueryResponse response = solrClient.query(solrQuery);
+			SolrDocumentList solrDocs = response.getResults();
+			for (SolrDocument solrDoc : solrDocs) {
+				@SuppressWarnings("unchecked")
+				List<String> descriptions = (List<String>) solrDoc.getFieldValue(SOLR_FIELD_DESCRIPTIONS);
+				for (String description : descriptions) {
+					if (description.indexOf(queryString) == 0) { // if it starts with the query string
+						// extract the word
+						suggestionSet.add(extractContainedWord(description, queryString));
+					}
+				}
+			}
+		} catch (Exception e) {
+		}
+		
+		suggestions.addAll(suggestionSet);
+		Collections.sort(suggestions);
+		return suggestions;
+	} 
+	
+	public boolean updateWords(Collection<String> noiseWords, SolrPatchOperation op) throws SolrServerException, IOException {
+		boolean success = false;
+		
+		if(op == SolrPatchOperation.ADD && this.noiseWords.containsAll(noiseWords)) {
+			// don't do anything
+			return success;
+		}
+		
 		SolrInputDocument solrInputDoc = new SolrInputDocument();
 		solrInputDoc.setField(SOLR_FIELD_ID, SOLR_DOC_ID_NOISE_WORD);
-		solrInputDoc.setField(SOLR_FIELD_NOISE_WORDS, getPatchValue(noiseWord, SolrPatchOperation.ADD));
+		solrInputDoc.setField(SOLR_FIELD_NOISE_WORDS, getPatchValue(noiseWords, op));
 		
 		solrClient.add(solrInputDoc, commitWithinMs);
+		success = true;
+		
+		//update local cache as well
+		switch (op) {
+			case ADD :
+				this.noiseWords.addAll(noiseWords);
+				break;
+			case REMOVE :
+				this.noiseWords.removeAll(noiseWords);
+			default :
+				break;
+		}
+		
+		return success;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public Set<String> getNoiseWords() throws SolrServerException, IOException { 
+		SolrDocument solrDoc = solrClient.getById(SOLR_DOC_ID_NOISE_WORD);
+		if(solrDoc != null) {
+			noiseWords = new HashSet<String>((List<String>) solrDoc.getFieldValue(SOLR_FIELD_NOISE_WORDS));
+		} else {
+			noiseWords = new HashSet<String>();	
+		}
+		
+		return noiseWords;
+		
+	}
 	
 	// helper methods
 	public Map<String, Object> getPatchValue(Object value, SolrPatchOperation op) {
@@ -133,5 +224,25 @@ public class IndexDao {
 		kwicIndex.setDescription(description);
 		
 		return kwicIndex;
+	}
+	
+	private String extractContainedWord(String line, String query) {
+		String containedWord = "";
+		
+		int queryLength = query.length();
+		
+		if(line.length() <= queryLength) {
+			return query;
+		}
+		
+		// if you have another word after this,
+		int nextWordIndex = line.indexOf(' ', queryLength);
+		if(nextWordIndex > queryLength - 1) {
+			containedWord = line.substring(0, nextWordIndex);
+		} else {
+			containedWord = line;
+		}
+		
+		return containedWord;
 	}
 }

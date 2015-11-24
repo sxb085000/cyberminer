@@ -2,9 +2,7 @@ package edu.utd.sbrp.web.cyberminer.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -25,6 +23,7 @@ import edu.utd.sbrp.web.cyberminer.module.Alphabetizer;
 import edu.utd.sbrp.web.cyberminer.module.CircularShift;
 import edu.utd.sbrp.web.cyberminer.module.LineStorage;
 import edu.utd.sbrp.web.cyberminer.module.NoiseFilter;
+import edu.utd.sbrp.web.cyberminer.util.SolrPatchOperation;
 import edu.utd.sbrp.web.cyberminer.util.StringUtil;
 
 @Controller
@@ -37,8 +36,6 @@ public class IndexController {
 	private final Pattern urlPattern = Pattern.compile("http://\\w+[.]\\w+[.](edu|com|org|net)");
 	private final Pattern descPattern = Pattern.compile("\\w+([ $.]|\\w+)*");
 	
-	private final String[] DEFAULT_NOISE_WORDS = {"a", "the", "of"};
-	private final Set<String> noiseWords = new HashSet<String>(Arrays.asList(DEFAULT_NOISE_WORDS));
 	
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public @ResponseBody RestfulResult createIndex(@RequestBody KWICIndex kwicIndex) {
@@ -66,7 +63,7 @@ public class IndexController {
 		List<String> lines = new ArrayList<String>(Arrays.asList(lineSplit));
 		LineStorage lineStorage = new LineStorage();
 		CircularShift circularShift = new CircularShift(lineStorage);
-		NoiseFilter noiseFilter = new NoiseFilter(circularShift, noiseWords);
+		NoiseFilter noiseFilter = new NoiseFilter(circularShift, indexDao.noiseWords());
 		Alphabetizer alphabetizer = new Alphabetizer(noiseFilter);
 
 		int lineIndex = 0;
@@ -107,13 +104,13 @@ public class IndexController {
 
 	@RequestMapping(value = "/search/suggest", method = RequestMethod.GET)
 	public @ResponseBody RestfulResult suggestSearchIndex(@RequestParam(name="q", required=true) String queryString,
-			@RequestParam(name="offset", defaultValue = "0") int offset,
-			@RequestParam(name="limit", defaultValue = "50") int limit) {
+			@RequestParam(name="limit", defaultValue = "10") int limit) {
 		RestfulResult result = new RestfulResult();
 
 		try {
-			
+			result.success(indexDao.suggestSearchIndex(queryString, limit));
 		} catch (Exception e) {
+			result.error(e.getMessage());
 		}
 
 		return result;
@@ -131,11 +128,12 @@ public class IndexController {
 		}
 
 		try {
-			indexDao.addNoiseWord(noiseWord);
-			noiseWords.add(noiseWord);
-			
-			//			result.success();
+			if (!indexDao.updateWords(Arrays.asList(noiseWord), SolrPatchOperation.ADD)) {
+				result.addMessage("noise word " + noiseWord + " already exists");
+			}
+			result.success(indexDao.noiseWords());
 		} catch (Exception e) {
+			result.error(e.getMessage());
 		}
 
 		return result;
@@ -144,8 +142,12 @@ public class IndexController {
 	@RequestMapping(value = "/noise", method = RequestMethod.GET)
 	public @ResponseBody RestfulResult getNoiseWords() {
 		RestfulResult result = new RestfulResult();
-
-		//		indexDao.createIndex(null);
+		
+		try {
+			result.success(indexDao.getNoiseWords());
+		} catch (Exception e) {
+			result.error(e.getMessage());
+		}
 
 		return result;
 	}
@@ -161,10 +163,9 @@ public class IndexController {
 		}
 		
 		try {
-			// call indexDao;
-			noiseWords.remove(noiseWord);
+			indexDao.updateWords(Arrays.asList(noiseWord), SolrPatchOperation.REMOVE);
 		} catch (Exception e) {
-			// TODO: handle exception
+			result.error(e.getMessage());
 		}
 		return result;
 	}

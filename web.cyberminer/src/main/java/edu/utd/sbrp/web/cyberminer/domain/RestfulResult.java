@@ -1,5 +1,7 @@
 package edu.utd.sbrp.web.cyberminer.domain;
 
+import java.util.concurrent.TimeUnit;
+
 public class RestfulResult {
 
 	private RestfulResultStatus status;
@@ -22,7 +24,7 @@ public class RestfulResult {
 		return startTime;
 	}
 	public long getServerTime() {
-		this.serverTime = System.nanoTime() - startTime;
+		this.serverTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
 		return serverTime;
 	}
 	public RestfulResultStatus getStatus() {
@@ -46,6 +48,7 @@ public class RestfulResult {
 	public void success(Object data) {
 		status = RestfulResultStatus.success;
 		setData(data);
+		getServerTime(); // way to initiate serverTime
 	}
 	public void fail(String message) {
 		status = RestfulResultStatus.fail;
