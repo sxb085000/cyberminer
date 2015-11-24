@@ -13,35 +13,39 @@
   $(function() {
 	  
 	  	var success = function() {
-	  		console.log("YAY!");
+	  		alert("success!!!");
+	  		
+	  		$("#searchResults").append("<div style='width:100%; float:left;'><h1>This is a description of something for testing purposes</h1></div>");
+	  		$("#searchResults").append("<div  style='width:100%; float:left;'><a href='http://www.google.com' style='width:100%; float:left;'>www.google.com</a></div>");
+	  		
+	  		$("#searchResults").show();
+	  		
+	  		$( "#inputToolbar" ).val(searchInput);
+			$( "#toolbar" ).show();
+			$( "#main" ).hide();
 	  	};
 	  	
-	  	var KWICIndex = function(url, description) {
-	  		this.url = url;
-	  		this.description = description;
-	  	};
-	  	
-		$( "#toolbar" ).hide();
+		$("#toolbar").hide();
+		$("#searchResults").hide();
 		
-		$("#readInput").button({icons: {primary: "search"}}).click(function( event ) {
+		$("#searchButton").button({icons: {primary: "search"}}).click(function( event ) {
+			var searchInput = $( "#input" ).val();
 			$.ajax({
-			     type: "POST",
-			     url: "http://localhost:8080/web.cyberminer/api/v1/indices",
+			     type: "GET",
+			     url: "http://localhost:8080/web.cyberminer/api/v1/indices/search?q="+searchInput+"&limit=10",
+			    		 /*
 			   	data: {
 			        firstParam: JSON.stringify(new KWICIndex("http://www.somewhere.com", "Somewhere description")),
 			    },
 			    dataType: "text",
+			    */
 			     success: success,
 			     error: function(){
 			         console.log("error!");
 			     }
 			 });
-			
-			$( "#inputToolbar" ).val($( "#input" ).val());
-			$( "#toolbar" ).show();
-			$( "#main" ).hide();
 		  });
-		$("#readInputToolbar").button({icons: {primary: "search"}});
+		$("#searchButtonToolbar").button({icons: {primary: "search"}});
 		
 		var availableTags = [
           "ActionScript",
@@ -70,6 +74,9 @@
         $( "#input" ).autocomplete({
           source: availableTags
         });
+        
+        
+        
   });
   </script>
 </head>
@@ -78,7 +85,7 @@
 <div id="toolbar" class="toolbar ui-widget-content">
 	<img src='stylesheets/images/cyberminer-logo.png' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:left;">
 	<input type="text" id="inputToolbar" value="" style="width:30%; height:32px; margin-top: 15px; margin-bottom: 15px; float:left;">
-	<button id="readInputToolbar" style="margin-top: 15px; margin-bottom: 15px; float:left;">Search</button>
+	<button id="searchButtonToolbar" style="margin-top: 15px; margin-bottom: 15px; float:left;">Search</button>
 </div>
 
 <div id="main">
@@ -90,8 +97,12 @@
 	<!-- INPUT -->
 	<div class="horizontal">
 		<input type="text" id="input" value="" style="width:30%; height:32px;">
-		<button id="readInput">Search</button>
+		<button id="searchButton">Search</button>
 	</div>
+</div>
+
+<!-- Descriptions/Links -->
+<div id="searchResults">
 </div>
 
 </body>
