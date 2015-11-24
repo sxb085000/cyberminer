@@ -10,6 +10,9 @@ public class KWICIndex {
 	private String description;
 	private List<String> indexLines;
 	
+	public KWICIndex() {
+	}
+	
 	public String getUrl() {
 		return url;
 	}

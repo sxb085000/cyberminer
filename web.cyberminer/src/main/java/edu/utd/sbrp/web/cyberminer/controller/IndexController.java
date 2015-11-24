@@ -97,8 +97,9 @@ public class IndexController {
 		RestfulResult result = new RestfulResult();
 
 		try {
-			
+			result.success(indexDao.searchIndex(queryString, offset, limit));
 		} catch (Exception e) {
+			result.error(e.getMessage());
 		}
 
 		return result;
