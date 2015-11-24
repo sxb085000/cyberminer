@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>KWIC - MASTER CONTROL</title>
+  
+  <link href="stylesheets/css/kwic.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script type="text/javascript" src="Input.js"></script>
+  <script type="text/javascript" src="LineStorage.js"></script>
+  <script type="text/javascript" src="CircularShift.js"></script>
+  <script type="text/javascript" src="Alphabetizer.js"></script>
+  <script type="text/javascript" src="Output.js"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+	  var masterControl = function( event ) {
+
+	  	  var ls = new LineStorage();
+
+	  	  var input = new Input(ls);
+		  input.read();
+	  	  
+	  	  var cs = new CircularShift(ls);
+	  	  cs.setup();
+	  	  
+	  	  var as = new Alphabetizer(cs);
+	  	  as.setup();
+	  	  
+	  	  var output = new Output(cs, as);
+	  	  output.read();
+	  	  
+	  }
+	  
+	  $("#readInput").button({icons: {primary: "index"}}).click(masterControl);
+  });
+  </script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="horizontal">
+	<img src='stylesheets/images/kwic-logo.png'>
+</div>
+
+<!-- INPUT -->
+<div class="horizontal">
+	<input type="text" id="input" value="" class="ui-widget-content ui-corner-all" style="width:30%;height:32px;">
+	<button id="readInput">Build</button>
+</div>
+
+<!-- OUTPUT -->
+<div id="outputContent" class="horizontal"></div>
+
+</body>
+</html>

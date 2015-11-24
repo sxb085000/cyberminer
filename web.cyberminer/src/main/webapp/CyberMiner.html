@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CYBERMINER</title>
+  
+  <link rel="stylesheet" href="stylesheets/css/cyberminer.css" type="text/css" />
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+	  
+	  	var success = function() {
+	  		console.log("YAY!");
+	  	};
+	  	
+	  	var KWICIndex = function(url, description) {
+	  		this.url = url;
+	  		this.description = description;
+	  	};
+	  	
+		$( "#toolbar" ).hide();
+		
+		$("#readInput").button({icons: {primary: "search"}}).click(function( event ) {
+			$.ajax({
+			     type: "POST",
+			     url: "http://localhost:8080/web.cyberminer/api/v1/indices",
+			   	data: {
+			        firstParam: JSON.stringify(new KWICIndex("http://www.somewhere.com", "Somewhere description")),
+			    },
+			    dataType: "text",
+			     success: success,
+			     error: function(){
+			         console.log("error!");
+			     }
+			 });
+			
+			$( "#inputToolbar" ).val($( "#input" ).val());
+			$( "#toolbar" ).show();
+			$( "#main" ).hide();
+		  });
+		$("#readInputToolbar").button({icons: {primary: "search"}});
+		
+		var availableTags = [
+          "ActionScript",
+          "AppleScript",
+          "Asp",
+          "BASIC",
+          "C",
+          "C++",
+          "Clojure",
+          "COBOL",
+          "ColdFusion",
+          "Erlang",
+          "Fortran",
+          "Groovy",
+          "Haskell",
+          "Java",
+          "JavaScript",
+          "Lisp",
+          "Perl",
+          "PHP",
+          "Python",
+          "Ruby",
+          "Scala",
+          "Scheme"
+        ];
+        $( "#input" ).autocomplete({
+          source: availableTags
+        });
+  });
+  </script>
+</head>
+<body>
+<!-- TOOLBAR -->
+<div id="toolbar" class="toolbar ui-widget-content">
+	<img src='stylesheets/images/cyberminer-logo.png' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:left;">
+	<input type="text" id="inputToolbar" value="" style="width:30%; height:32px; margin-top: 15px; margin-bottom: 15px; float:left;">
+	<button id="readInputToolbar" style="margin-top: 15px; margin-bottom: 15px; float:left;">Search</button>
+</div>
+
+<div id="main">
+	<!-- HEADER -->
+	<div class="horizontal">
+		<img src='stylesheets/images/cyberminer-logo.png'>
+	</div>
+	
+	<!-- INPUT -->
+	<div class="horizontal">
+		<input type="text" id="input" value="" style="width:30%; height:32px;">
+		<button id="readInput">Search</button>
+	</div>
+</div>
+
+</body>
+</html>
