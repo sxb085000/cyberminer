@@ -2,7 +2,9 @@ package edu.utd.sbrp.web.cyberminer.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -22,6 +24,7 @@ import edu.utd.sbrp.web.cyberminer.domain.RestfulResultStatus;
 import edu.utd.sbrp.web.cyberminer.module.Alphabetizer;
 import edu.utd.sbrp.web.cyberminer.module.CircularShift;
 import edu.utd.sbrp.web.cyberminer.module.LineStorage;
+import edu.utd.sbrp.web.cyberminer.module.NoiseFilter;
 import edu.utd.sbrp.web.cyberminer.util.StringUtil;
 
 @Controller
@@ -32,8 +35,10 @@ public class IndexController {
 	private IndexDao indexDao;
 
 	private final Pattern urlPattern = Pattern.compile("http://\\w+[.]\\w+[.](edu|com|org|net)");
-	private final Pattern descPattern = Pattern.compile("\\w+(( \\w+)|$)*");
-		
+	private final Pattern descPattern = Pattern.compile("\\w+([ $.]|\\w+)*");
+	
+	private final String[] DEFAULT_NOISE_WORDS = {"a", "the", "of"};
+	private final Set<String> noiseWords = new HashSet<String>(Arrays.asList(DEFAULT_NOISE_WORDS));
 	
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public @ResponseBody RestfulResult createIndex(@RequestBody KWICIndex kwicIndex) {
@@ -42,11 +47,12 @@ public class IndexController {
 		// check url first
 		if (StringUtil.isEmpty(kwicIndex.getUrl()) || 
 				!urlPattern.matcher(kwicIndex.getUrl()).matches()) {
-			result.fail("url provided (\"" + kwicIndex.getUrl() + "\")is not in the right format. must be in format " + urlPattern.pattern() + ".");
+			result.fail("url provided (\"" + kwicIndex.getUrl() + "\")is not in the right format. must be in format \"" + urlPattern.pattern() + "\".");
 		}
 		// then check description
-		if (StringUtil.isEmpty(kwicIndex.getDescription())) {
-			result.fail("field 'description' is required and cannot be empty.");
+		if (StringUtil.isEmpty(kwicIndex.getDescription()) ||
+				!descPattern.matcher(kwicIndex.getDescription()).matches()) {
+			result.fail("Required field 'description' (" + kwicIndex.getDescription() + ") is not in the format \"" + descPattern.pattern() + "\".");
 		}
 		
 		if(result.getStatus() == RestfulResultStatus.fail) {
@@ -60,15 +66,17 @@ public class IndexController {
 		List<String> lines = new ArrayList<String>(Arrays.asList(lineSplit));
 		LineStorage lineStorage = new LineStorage();
 		CircularShift circularShift = new CircularShift(lineStorage);
-		Alphabetizer alphabetizer = new Alphabetizer(circularShift);
+		NoiseFilter noiseFilter = new NoiseFilter(circularShift, noiseWords);
+		Alphabetizer alphabetizer = new Alphabetizer(noiseFilter);
 
 		int lineIndex = 0;
 		for (String line : lines) {
 			lineStorage.setLine(lineIndex++, line);
 		}
 
-		circularShift.setup();
-		alphabetizer.setup();
+		circularShift.process();
+		noiseFilter.process();
+		alphabetizer.process();
 		kwicIndex.setIndexLines(alphabetizer.getLines());
 
 		// store to solr
@@ -123,7 +131,8 @@ public class IndexController {
 
 		try {
 			indexDao.addNoiseWord(noiseWord);
-
+			noiseWords.add(noiseWord);
+			
 			//			result.success();
 		} catch (Exception e) {
 		}
@@ -144,8 +153,18 @@ public class IndexController {
 	public @ResponseBody RestfulResult deleteNoiseWords(@PathVariable(value="noiseWord") String noiseWord) {
 		RestfulResult result = new RestfulResult();
 
-		//		indexDao.createIndex(null);
-
+		// check to see if it really is a word
+		if(noiseWord.split("\\s+").length > 1) {
+			result.fail("noise word should be a word (no space allowed)");
+			return result;
+		}
+		
+		try {
+			// call indexDao;
+			noiseWords.remove(noiseWord);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 		return result;
 	}
 

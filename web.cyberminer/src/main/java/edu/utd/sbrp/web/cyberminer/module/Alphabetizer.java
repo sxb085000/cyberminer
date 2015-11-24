@@ -13,7 +13,7 @@ public class Alphabetizer implements IndexModule {
 		this.formerModule = formerModule;
 	}
 	
-	public void setup() {
+	public void process() {
 		//get lines from formerModule
 		int lineIndex = 0;
 		List<String> tempList = new ArrayList<String>();

@@ -18,7 +18,7 @@ public class CircularShift implements IndexModule {
 		this.formerModule = formerModule;
 	}
 	
-	public void setup() {
+	public void process() {
 		// get lines from lineStorage
 		int lineIndex = 0;
 		do {

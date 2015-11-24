@@ -37,6 +37,8 @@ public class RestfulResult {
 	public void addMessage(String message) {
 		if (this.message == null) {
 			this.message = "";
+		} else if (this.message.length() > 0) {
+			this.message += " ";
 		}
 		this.message += message;
 	}

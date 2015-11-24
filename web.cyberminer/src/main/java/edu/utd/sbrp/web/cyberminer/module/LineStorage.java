@@ -10,7 +10,7 @@ public class LineStorage implements IndexModule {
 	public LineStorage() {
 	}
 	
-	public void setup() {
+	public void process() {
 		// not used
 	}
 
