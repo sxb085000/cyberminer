@@ -33,3 +33,8 @@ h1 {
 	font-weight: 500;
 	line-height: 26.4px;
 }
+
+#searchResults {
+	width: 100%;
+	height: 100px;
+}
