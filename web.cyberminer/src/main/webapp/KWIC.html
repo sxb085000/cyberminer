@@ -15,24 +15,24 @@
 			this.url = url;
 			this.description = description;
 		};
+		
+		var successResult = function(response) {
+			console.log("response - "+response);
+		}
 	  	
 	  $("#readInput").button({icons: {primary: "index"}}).click(function( event ) {
 		 var indexDemo = new KWICIndex("htttp://www.google.com", "Just google");
-		  
+		 
 		 $.ajax({
 		    type: "POST",
 		    url: "http://localhost:8080/web.cyberminer/api/v1/indices",
-		    		 /*
-		   	data: {
-		        firstParam: JSON.stringify(new KWICIndex("http://www.somewhere.com", "Somewhere description")),
-		    },
-		    dataType: "text",
-		    */
-		    success: success,
-		    error: function(){
-		        console.log("error!");
-		    }
+		    data: JSON.stringify(indexDemo),
+		    success: successResult,
+		    dataType: "json",
+		    contentType: 'application/json'
 		 });
+		 
+		 
 	  });
 	  
 	  function build() {
