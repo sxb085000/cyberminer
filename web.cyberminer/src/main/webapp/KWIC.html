@@ -8,66 +8,66 @@
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
   <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="KWICIndex.js"></script>
   
   <script type="text/javascript">
   $(function() {
-	  var KWICIndex = function(url, description) {
-			this.url = url;
-			this.description = description;
-		};
-		
-		var successResult = function(response) {
-			console.log("response - "+response);
+	$("#outputContent").hide();
+	 
+	var successResult = function(response) {
+		if(response.status != 'fail') {
+			$("#outputContent").append("<p>"+response.data.indexLines+"</p>");
+		} else {
+			$("#outputContent").append("<p style='color:red;'>Error: "+response.message+"</p>");
 		}
-	  	
-	  $("#readInput").button({icons: {primary: "index"}}).click(function( event ) {
-		 var indexDemo = new KWICIndex("htttp://www.google.com", "Just google");
+		
+		$("#outputContent").fadeIn("slow", function() { $(this).delay(6000).fadeOut("slow"); });
+	}
+	 	
+	 $("#readInput").button({icons: {primary: "index"}}).click(function( event ) {
+		 $("#outputContent").empty();
 		 
-		 $.ajax({
-		    type: "POST",
-		    url: "http://localhost:8080/web.cyberminer/api/v1/indices",
-		    data: JSON.stringify(indexDemo),
-		    success: successResult,
-		    dataType: "json",
-		    contentType: 'application/json'
-		 });
+		 var indices = parseURLs();
 		 
-		 
-	  });
+		 for(var i = 0; i < indices.length; i++) {
+			 $.ajax({
+				    type: "POST",
+				    url: "http://localhost:8080/web.cyberminer/api/v1/indices",
+				    data: JSON.stringify(indices[i]),
+				    success: successResult,
+				    dataType: "json",
+				    contentType: 'application/json'
+				 });
+		 }
+	 });
+	 
+	 function parseURLs() {
+	  var indices = [];
 	  
-	  function build() {
-		$("#outputContent").empty();
-		 
-		var outputLine = $("<div class='output-line'></div>");
-		
-		var csDiv = $("<div class='output-left ui-widget-content ui-corner-all'></div>");
-		csDiv.append("<h2>Circular Shift<img class='cs-help' src='stylesheets/images/help-icon.png' title='Repeatedly removes the first word of the line and append it at the end of the line until it reaches the original input.'></h2>");
+	  var input = $("#input").val();
+	  
+	  var urls = input.split("$");
+	  for(var i = 0; i < urls.length; i++) {
+		  var urlInput = urls[i].split(",");
 		  
-		var textArea = $("<textarea rows='12' cols='50' readonly='readonly' style='resize:none;'></textarea>");
-		for(var i=0; i < this.cs.length; i++) {
-			textArea.append("CS"+i+": "+this.cs[i]+"\n");
-		}
-		csDiv.append(textArea);
-		  
-		outputLine.append(csDiv);
-		  
-		var asDiv = $("<div class='output-right ui-widget-content ui-corner-all'></div>");
-		asDiv.append("<h2>Alphabetic Shift<img class='as-help' src='stylesheets/images/help-icon.png' title='Sorts the circular shift output in an ascending alphabetical order.'></h2>");
-		  
-		textArea = $("<textarea rows='12' cols='50' readonly='readonly' style='resize:none;'></textarea>");
-		for(var i=0; i < this.as.length; i++) {
-			textArea.append("AS"+i+": "+this.as[i]+"\n");
-		}
-		asDiv.append(textArea);
-		  
-		outputLine.append(asDiv);
-		  
-		$("#outputContent").append(outputLine);
+		  indices.push(new KWICIndex(urlInput[0], urlInput[1]));
 	  }
+	  
+	  return indices;
+	 }
+	 
+	 $("#cyberminer").click(function( event ) {
+		 window.location.href = "http://localhost:8080/web.cyberminer/CyberMiner.html";
+	 });
+	  
   });
   </script>
 </head>
 <body>
+<!-- TOOLBAR -->
+<div id="navigationBar" class="toolbar">
+	<img id="cyberminer" src='stylesheets/images/cyberminer-logo.png' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:right;">
+</div>
 
 <!-- HEADER -->
 <div class="horizontal">
@@ -81,7 +81,7 @@
 </div>
 
 <!-- OUTPUT -->
-<div id="outputContent" class="horizontal"></div>
+<div id="outputContent" class="message ui-widget-content"></div>
 
 </body>
 </html>

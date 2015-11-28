@@ -5,72 +5,128 @@
   <title>CYBERMINER</title>
   
   <link rel="stylesheet" href="stylesheets/css/cyberminer.css" type="text/css" />
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
   <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="jquery.twbsPagination.min.js"></script>
+  <script src="KWICIndex.js"></script>
   
   <script type="text/javascript">
   $(function() {
-	  !function(a,b,c,d){"use strict";var e=a.fn.twbsPagination,f=function(c,d){if(this.$element=a(c),this.options=a.extend({},a.fn.twbsPagination.defaults,d),this.options.startPage<1||this.options.startPage>this.options.totalPages)throw new Error("Start page option is incorrect");if(this.options.totalPages=parseInt(this.options.totalPages),isNaN(this.options.totalPages))throw new Error("Total pages option is not correct!");if(this.options.visiblePages=parseInt(this.options.visiblePages),isNaN(this.options.visiblePages))throw new Error("Visible pages option is not correct!");if(this.options.totalPages<this.options.visiblePages&&(this.options.visiblePages=this.options.totalPages),this.options.onPageClick instanceof Function&&this.$element.first().on("page",this.options.onPageClick),this.options.href){var e,f=this.options.href.replace(/[-\/\\^$*+?.|[\]]/g,"\\$&");f=f.replace(this.options.hrefVariable,"(\\d+)"),null!=(e=new RegExp(f,"i").exec(b.location.href))&&(this.options.startPage=parseInt(e[1],10))}var g="function"==typeof this.$element.prop?this.$element.prop("tagName"):this.$element.attr("tagName");return"UL"===g?this.$listContainer=this.$element:this.$listContainer=a("<ul></ul>"),this.$listContainer.addClass(this.options.paginationClass),"UL"!==g&&this.$element.append(this.$listContainer),this.render(this.getPages(this.options.startPage)),this.setupEvents(),this.options.initiateStartPageClick&&this.$element.trigger("page",this.options.startPage),this};f.prototype={constructor:f,destroy:function(){return this.$element.empty(),this.$element.removeData("twbs-pagination"),this.$element.off("page"),this},show:function(a){if(1>a||a>this.options.totalPages)throw new Error("Page is incorrect.");return this.render(this.getPages(a)),this.setupEvents(),this.$element.trigger("page",a),this},buildListItems:function(a){var b=[];if(this.options.first&&b.push(this.buildItem("first",1)),this.options.prev){var c=a.currentPage>1?a.currentPage-1:this.options.loop?this.options.totalPages:1;b.push(this.buildItem("prev",c))}for(var d=0;d<a.numeric.length;d++)b.push(this.buildItem("page",a.numeric[d]));if(this.options.next){var e=a.currentPage<this.options.totalPages?a.currentPage+1:this.options.loop?1:this.options.totalPages;b.push(this.buildItem("next",e))}return this.options.last&&b.push(this.buildItem("last",this.options.totalPages)),b},buildItem:function(b,c){var d=a("<li></li>"),e=a("<a></a>"),f=null;switch(b){case"page":f=c,d.addClass(this.options.pageClass);break;case"first":f=this.options.first,d.addClass(this.options.firstClass);break;case"prev":f=this.options.prev,d.addClass(this.options.prevClass);break;case"next":f=this.options.next,d.addClass(this.options.nextClass);break;case"last":f=this.options.last,d.addClass(this.options.lastClass)}return d.data("page",c),d.data("page-type",b),d.append(e.attr("href",this.makeHref(c)).html(f)),d},getPages:function(a){var b=[],c=Math.floor(this.options.visiblePages/2),d=a-c+1-this.options.visiblePages%2,e=a+c;0>=d&&(d=1,e=this.options.visiblePages),e>this.options.totalPages&&(d=this.options.totalPages-this.options.visiblePages+1,e=this.options.totalPages);for(var f=d;e>=f;)b.push(f),f++;return{currentPage:a,numeric:b}},render:function(b){var c=this;this.$listContainer.children().remove(),this.$listContainer.append(this.buildListItems(b)),this.$listContainer.children().each(function(){var d=a(this),e=d.data("page-type");switch(e){case"page":d.data("page")===b.currentPage&&d.addClass(c.options.activeClass);break;case"first":d.toggleClass(c.options.disabledClass,1===b.currentPage);break;case"last":d.toggleClass(c.options.disabledClass,b.currentPage===c.options.totalPages);break;case"prev":d.toggleClass(c.options.disabledClass,!c.options.loop&&1===b.currentPage);break;case"next":d.toggleClass(c.options.disabledClass,!c.options.loop&&b.currentPage===c.options.totalPages)}})},setupEvents:function(){var b=this;this.$listContainer.find("li").each(function(){var c=a(this);return c.off(),c.hasClass(b.options.disabledClass)||c.hasClass(b.options.activeClass)?void c.on("click",!1):void c.click(function(a){!b.options.href&&a.preventDefault(),b.show(parseInt(c.data("page")))})})},makeHref:function(a){return this.options.href?this.options.href.replace(this.options.hrefVariable,a):"#"}},a.fn.twbsPagination=function(b){var c,e=Array.prototype.slice.call(arguments,1),g=a(this),h=g.data("twbs-pagination"),i="object"==typeof b&&b;return h||g.data("twbs-pagination",h=new f(this,i)),"string"==typeof b&&(c=h[b].apply(h,e)),c===d?g:c},a.fn.twbsPagination.defaults={totalPages:0,startPage:1,visiblePages:5,initiateStartPageClick:!0,href:!1,hrefVariable:"{{number}}",first:"First",prev:"Previous",next:"Next",last:"Last",loop:!1,onPageClick:null,paginationClass:"pagination",nextClass:"next",prevClass:"prev",lastClass:"last",firstClass:"first",pageClass:"page",activeClass:"active",disabledClass:"disabled"},a.fn.twbsPagination.Constructor=f,a.fn.twbsPagination.noConflict=function(){return a.fn.twbsPagination=e,this}}(window.jQuery,window,document);
-	  
 		$("#toolbar").hide();
 		$("#searchResults").hide();
 		
-		var search = function(event) {
-			var searchInput = $( "#input" ).val();
+		var successResult = function(response) {
+
+			for(var i = 0; i < response.data.length; i++) {
+				if(response.data[i].description != null) {
+					searchResults.push(new KWICIndex(response.data[i].url, response.data[i].description));
+				}
+			}
 			
-	  		$("#searchResults").append("<div style='width:100%; float:left;'><h1>1. This is a description of something for testing purposes</h1></div>");
-	  		$("#searchResults").append("<div  style='width:100%; float:left;'><a href='http://www.google.com' style='width:100%; float:left;'>www.google.com</a></div>");
-	  		$("#searchResults").append("<div style='width:100%; float:left;'><h1>2. Another description</h1></div>");
-	  		$("#searchResults").append("<div  style='width:100%; float:left;'><a href='http://www.google.com' style='width:100%; float:left;'>www.google.com</a></div>");
+			updateResults();
+		}
+		
+		var searchResults;
+		var search = function(event) {
+			searchResults = [];
+			
+			var searchInput;
+			if($(this).attr("id") == "searchButton") {
+				searchInput = $("#input").val();
+				
+				$("#inputToolbar").val(searchInput);
+			}
+			if($(this).attr("id") == "searchButtonToolbar") {
+				searchInput = $("#inputToolbar").val();
+			}
+			
+	  		$.ajax({
+			    type: "GET",
+			    url: "http://localhost:8080/web.cyberminer/api/v1/indices/search?q="+searchInput,
+			    success: successResult
+			});
 	  		
+			$("#toolbar").show();
 	  		$("#searchResults").show();
-	  		
-	  		$( "#inputToolbar" ).val(searchInput);
-			$( "#toolbar" ).show();
-			$( "#main" ).hide();
+			$("#navigationBar").hide();
+			$("#main").hide();
 		}
 		
 		$("#searchButton").button({icons: {primary: "search"}}).click(search);
 		
 		$("#searchButtonToolbar").button({icons: {primary: "search"}}).click(search);
 		
-		var availableTags = [
-          "ActionScript",
-          "AppleScript",
-          "Asp",
-          "BASIC",
-          "C",
-          "C++",
-          "Clojure",
-          "COBOL",
-          "ColdFusion",
-          "Erlang",
-          "Fortran",
-          "Groovy",
-          "Haskell",
-          "Java",
-          "JavaScript",
-          "Lisp",
-          "Perl",
-          "PHP",
-          "Python",
-          "Ruby",
-          "Scala",
-          "Scheme"
-        ];
-        $( "#input" ).autocomplete({
-          source: availableTags
+        $(".kwic").click(function( event ) {
+	   		 window.location.href = "http://localhost:8080/web.cyberminer/KWIC.html";
+	   	});
+        
+        function updateResults() {
+	  		var itemsPerPage = 3;
+	  		
+	  		var total = Math.ceil(searchResults.length/itemsPerPage);
+	  		var visible = 3;
+	  		
+	  		if(total < 3) {
+	  			visible = total;
+	  		}
+	  		
+	  		$("#searchResults").empty();
+	  		$("#searchResults").append("<div id='page-content'></div>");
+	  		$("#searchResults").append("<ul id='pagination' class='pagination-sm'></ul>");
+	  		
+	  		if (searchResults.length <= 0) {
+        		$('#page-content').empty();
+        		$('#pagination').hide();
+        		$('#page-content').append("<div style='width:100%; float:left; margin-top: 15px; margin-left: 15px;'><h4>Nothing found.</h4></div>");
+        	} else {
+        		$('#page-content').empty();
+        		$('#pagination').show();
+        	}
+	  		
+        	$('#pagination').twbsPagination({
+        		startPage: 1,
+                totalPages: total,
+                visiblePages: visible,
+                onPageClick: function (event, page) {
+                	$('#page-content').empty();
+                	
+                    for(var i = (itemsPerPage*(page-1)); i < (itemsPerPage*page); i++){
+                    	$('#page-content').append("<div style='width:100%; float:left; margin-top: 15px; margin-left: 15px;'><h4>"+(i+1)+". "+searchResults[i].description+"</h4></div>");
+                    	$('#page-content').append("<div style='width:100%; float:left; margin-left: 15px;'><a href='"+searchResults[i].url+"' style='width:100%; float:left;'>"+searchResults[i].url+"</a></div>");
+                    }
+                }
+            });
+        }
+        
+        var autocompletion = function(response) {
+        	$("#input").autocomplete({
+                source: response.data
+            });
+        }
+        
+        $("#input").on('input',function(e){
+        	$.ajax({
+			    type: "GET",
+			    url: "http://localhost:8080/web.cyberminer/api/v1/indices/search/suggest?q="+$("#input").val(),
+			    success: autocompletion
+			});
         });
         
+        var toolbarAutocompletion = function(response) {
+        	$("#inputToolbar").autocomplete({
+                source: response.data
+            });
+        }
         
-        $('#pagination-test').pagination();
-        $('#pagination-demo').twbsPagination({
-            totalPages: 35,
-            visiblePages: 7,
-            onPageClick: function (event, page) {
-                $('#pagination-test').html('Page ' + page);
-            }
+        $("#inputToolbar").on('input',function(e){
+        	$.ajax({
+			    type: "GET",
+			    url: "http://localhost:8080/web.cyberminer/api/v1/indices/search/suggest?q="+$("#inputToolbar").val(),
+			    success: toolbarAutocompletion
+			});
         });
         
   });
@@ -82,6 +138,10 @@
 	<img src='stylesheets/images/cyberminer-logo.png' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:left;">
 	<input type="text" id="inputToolbar" value="" style="width:30%; height:32px; margin-top: 15px; margin-bottom: 15px; float:left;">
 	<button id="searchButtonToolbar" style="margin-top: 15px; margin-bottom: 15px; float:left;">Search</button>
+	<img class="kwic" src='stylesheets/images/kwic-logo.gif' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:right;">
+</div>
+<div id="navigationBar" class="toolbar">
+	<img class="kwic" src='stylesheets/images/kwic-logo.gif' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:right;">
 </div>
 
 <div id="main">
@@ -98,11 +158,7 @@
 </div>
 
 <!-- Descriptions/Links -->
-<div id="searchResults" class="ui-widget-content pagination-sm">
-</div>
-<ul id="pagination-demo" class="pagination-sm pagination"></ul>
-<div id="pagination-test" class="ui-widget-content pagination-sm">
-</div>
+<div id="searchResults"></div>
 
 </body>
 </html>
