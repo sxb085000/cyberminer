@@ -102,6 +102,19 @@ public class IndexController {
 		return result;
 	}
 
+	@RequestMapping(value = "/spellcheck", method = RequestMethod.GET)
+	public @ResponseBody RestfulResult spellCheck(@RequestParam(name="q", required=true) String queryString) {
+		RestfulResult result = new RestfulResult();
+		
+		try {
+			result.success(indexDao.spellCheck(queryString));
+		} catch (Exception e) {
+			result.error(e.getMessage());
+		}
+		
+		return result;
+	}
+
 	@RequestMapping(value = "/search/suggest", method = RequestMethod.GET)
 	public @ResponseBody RestfulResult suggestSearchIndex(@RequestParam(name="q", required=true) String queryString,
 			@RequestParam(name="limit", defaultValue = "10") int limit) {

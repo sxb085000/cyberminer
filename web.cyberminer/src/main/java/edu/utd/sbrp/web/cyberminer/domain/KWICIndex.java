@@ -1,5 +1,6 @@
 package edu.utd.sbrp.web.cyberminer.domain;
 
+import java.util.Date;
 import java.util.List;
 
 public class KWICIndex {
@@ -9,6 +10,7 @@ public class KWICIndex {
 	private String url;
 	private String description;
 	private List<String> indexLines;
+	private Date createdDate;
 	
 	public KWICIndex() {
 	}
@@ -23,13 +25,23 @@ public class KWICIndex {
 		return description;
 	}
 	public void setDescription(String description) {
-		this.description = description;
+		if(description != null) {
+			this.description = description.trim();
+		}
 	}
 	public List<String> getIndexLines() {
 		return indexLines;
 	}
 	public void setIndexLines(List<String> indexLines) {
 		this.indexLines = indexLines;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
 	}
 	
 }

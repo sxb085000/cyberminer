@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,11 +19,13 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Repository;
 
 import edu.utd.sbrp.web.cyberminer.domain.KWICIndex;
@@ -34,8 +37,9 @@ public class IndexDao {
 	// solr field names
 	private final String SOLR_FIELD_ID = "id";
 	private final String SOLR_FIELD_VERSION = "_version_";
-	private final String SOLR_FIELD_DESCRIPTION = "description_s";
-	private final String SOLR_FIELD_DESCRIPTIONS = "descriptions_ss";
+	private final String SOLR_FIELD_DESCRIPTION = "description";
+	private final String SOLR_FIELD_DESCRIPTIONS = "desc_index";
+	private final String SOLR_FIELD_CREATION_DATE = "created_tdt";
 	private final String SOLR_FIELD_NOISE_WORDS = "noise_words_ss";
 	
 	// solr doc id's
@@ -58,6 +62,9 @@ public class IndexDao {
 	@Autowired
 	private SolrClient solrClient;
 
+	@Autowired
+	private ResourceLoader resourceLoader;
+	
 	@PostConstruct
 	public void init() {
 		// bootstrap noisewords
@@ -83,6 +90,7 @@ public class IndexDao {
 		solrInputdoc.setField(SOLR_FIELD_ID, index.getUrl());
 		solrInputdoc.setField(SOLR_FIELD_DESCRIPTION, index.getDescription());
 		solrInputdoc.setField(SOLR_FIELD_DESCRIPTIONS, index.getIndexLines());
+		solrInputdoc.setField(SOLR_FIELD_CREATION_DATE, new Date());
 		solrInputdoc.setField(SOLR_FIELD_VERSION, -1); // the document must NOT exist
 
 		try {
@@ -132,8 +140,32 @@ public class IndexDao {
 		
 		return foundIndices;
 	}
+
+	public String spellCheck(String queryString) throws SolrServerException, IOException {
+		String similarWord = "";
+		
+		if(queryString == null || queryString.length() < 1) {
+			return similarWord;
+		}
+		
+		String[] queryTokens = queryString.split("\\s+");
+		
+		// prepare query string append '*' after each line
+		SolrQuery solrQuery = new SolrQuery("\"" + queryString.trim() + "\""); // fuzzy search
+		solrQuery.set("df", SOLR_FIELD_DESCRIPTIONS);
+		
+		QueryResponse response = solrClient.query(solrQuery);
+		SpellCheckResponse spellCheckResponse = response.getSpellCheckResponse();
+
+		for (String token : queryTokens) {
+			String suggestion = spellCheckResponse.getFirstSuggestion(token);
+			similarWord += " " + ((suggestion != null) ? suggestion : token);
+		}
+		
+		return similarWord.trim();
+	}
 	
-	public List<String> suggestSearchIndex(String queryString, int limit) {
+	public List<String> suggestSearchIndex(String queryString, int limit) throws SolrServerException, IOException {
 		List<String> suggestions = new ArrayList<String>();
 		Set<String> suggestionSet = new HashSet<String>();
 		
@@ -141,20 +173,17 @@ public class IndexDao {
 		solrQuery.set("df", SOLR_FIELD_DESCRIPTIONS);
 		solrQuery.setRows(limit);
 
-		try {
-			QueryResponse response = solrClient.query(solrQuery);
-			SolrDocumentList solrDocs = response.getResults();
-			for (SolrDocument solrDoc : solrDocs) {
-				@SuppressWarnings("unchecked")
-				List<String> descriptions = (List<String>) solrDoc.getFieldValue(SOLR_FIELD_DESCRIPTIONS);
-				for (String description : descriptions) {
-					if (description.indexOf(queryString) == 0) { // if it starts with the query string
-						// extract the word
-						suggestionSet.add(extractContainedWord(description, queryString));
-					}
+		QueryResponse response = solrClient.query(solrQuery);
+		SolrDocumentList solrDocs = response.getResults();
+		for (SolrDocument solrDoc : solrDocs) {
+			@SuppressWarnings("unchecked")
+			List<String> descriptions = (List<String>) solrDoc.getFieldValue(SOLR_FIELD_DESCRIPTIONS);
+			for (String description : descriptions) {
+				if (description.indexOf(queryString) == 0) { // if it starts with the query string
+					// extract the word
+					suggestionSet.add(extractContainedWord(description, queryString));
 				}
 			}
-		} catch (Exception e) {
 		}
 		
 		suggestions.addAll(suggestionSet);
@@ -218,10 +247,12 @@ public class IndexDao {
 		// extract values
 		String url = (String) solrDocument.getFieldValue(SOLR_FIELD_ID);
 		String description = (String) solrDocument.getFieldValue(SOLR_FIELD_DESCRIPTION);
+		Date createdDate = (Date) solrDocument.getFieldValue(SOLR_FIELD_CREATION_DATE);
 		
 		// initialize kwicIndex
 		kwicIndex.setUrl(url);
 		kwicIndex.setDescription(description);
+		kwicIndex.setCreatedDate(createdDate);
 		
 		return kwicIndex;
 	}
