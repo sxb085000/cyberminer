@@ -178,10 +178,12 @@ public class IndexDao {
 		for (SolrDocument solrDoc : solrDocs) {
 			@SuppressWarnings("unchecked")
 			List<String> descriptions = (List<String>) solrDoc.getFieldValue(SOLR_FIELD_DESCRIPTIONS);
-			for (String description : descriptions) {
-				if (description.indexOf(queryString) == 0) { // if it starts with the query string
-					// extract the word
-					suggestionSet.add(extractContainedWord(description, queryString));
+			if(descriptions != null && descriptions.size() > 0) {
+				for (String description : descriptions) {
+					if (description.indexOf(queryString) == 0) { // if it starts with the query string
+						// extract the word
+						suggestionSet.add(extractContainedWord(description, queryString));
+					}
 				}
 			}
 		}
