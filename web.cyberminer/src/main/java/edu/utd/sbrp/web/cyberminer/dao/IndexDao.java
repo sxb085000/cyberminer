@@ -173,7 +173,7 @@ public class IndexDao {
 		List<String> suggestions = new ArrayList<String>();
 		Set<String> suggestionSet = new HashSet<String>();
 		
-		SolrQuery solrQuery = new SolrQuery("\"" + queryString + "\"*");
+		SolrQuery solrQuery = new SolrQuery(queryString + "*");
 		solrQuery.set("df", SOLR_FIELD_DESCRIPTIONS);
 		solrQuery.setRows(limit);
 
@@ -186,7 +186,9 @@ public class IndexDao {
 				for (String description : descriptions) {
 					if (description.indexOf(queryString) == 0) { // if it starts with the query string
 						// extract the word
-						suggestionSet.add(extractContainedWord(description, queryString));
+						String suggestion = extractContainedWord(description, queryString);
+						System.out.println(suggestion);
+						suggestionSet.add(suggestion);
 					}
 				}
 			}
