@@ -116,7 +116,11 @@ public class IndexDao {
 				if(wordAppended) {
 					queryWord = "AND " + queryWord;
 				}
-				queryWord += "*";
+				if(queryWord.endsWith(")") && queryWord.length() > 1) {
+					queryWord.replace(")", "*)");
+				} else {
+					queryWord += "*";
+				}
 				wordAppended = true;
 			} else {
 				wordAppended = false;
