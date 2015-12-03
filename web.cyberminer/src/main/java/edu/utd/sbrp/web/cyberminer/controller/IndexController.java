@@ -34,7 +34,7 @@ public class IndexController {
 	private IndexDao indexDao;
 
 	private final Pattern urlPattern = Pattern.compile("http://\\w+[.]\\w+[.](edu|com|org|net)");
-	private final Pattern descPattern = Pattern.compile("\\w+([ $.]|\\w+)*");
+	private final Pattern descPattern = Pattern.compile("\\w+([ $.,!&#@=+/%]|\\w+)*");
 	
 	
 	@RequestMapping(value = "", method = RequestMethod.POST)
