@@ -63,9 +63,8 @@
 	   		 window.location.href = "http://localhost:8080/web.cyberminer/KWIC.html";
 	   	});
         
+        var itemsPerPage = 10;
         function updateResults() {
-	  		var itemsPerPage = 3;
-	  		
 	  		var total = Math.ceil(searchResults.length/itemsPerPage);
 	  		var visible = 3;
 	  		
@@ -128,6 +127,75 @@
 			});
         });
         
+        function saveConfig() {
+        	itemsPerPage = $("#pagination").val();
+        	
+   	   		$('#dialog-form').dialog( "close" );
+		}
+        
+        dialog = $( "#dialog-form" ).dialog({
+    	    autoOpen: false,
+    	    height: 400,
+    	    width: 550,
+    	    modal: true,
+    	    buttons: {
+    	      "Save": saveConfig,
+    	      Cancel: function() {
+    	    	  $('#dialog-form').dialog( "close" );
+    	      }
+    	    },
+    	    close: function() {
+    	    	$('#dialog-form').dialog( "close" );
+    	    }
+    	  });
+        
+        var getNoiseWords = function(response) {
+        	$('#dialog-form').dialog("open");
+			
+        	$( "#noise-words-table tbody" ).empty();
+			$(response.data).each(function( index, element ) {
+				$( "#noise-words-table tbody" ).append( "<tr><td class='noise-word-name'>" + element + "</td><td><img class='delete' src='stylesheets/images/delete.png' style='width:30px; height:30px;'/></td></tr>" );
+			});
+			
+        	$(".delete").on("click", function (e) {
+        		var lineElement = $(this).parent().parent();
+        		var noiseWordName = lineElement.find($('.noise-word-name')).text();
+        		
+        		$.ajax({
+    			    type: "DELETE",
+    			    url: "http://localhost:8080/web.cyberminer/api/v1/indices/noise/"+noiseWordName
+    			});
+        		
+        		lineElement.remove();
+			});
+        }
+        
+        $( "#config" ).button({
+      		icons: {
+      			primary: "ui-icon-gear"
+      		}
+      	}).on( "click", function() {
+      		$.ajax({
+			    type: "GET",
+			    url: "http://localhost:8080/web.cyberminer/api/v1/indices/noise",
+			    success: getNoiseWords
+			});
+        });
+        
+        var addNoiseWord = function(response) {
+        	$( "#noise-words-table tbody" ).append( "<tr><td class='noise-word-name'>" + $("#name").val() + "</td><td><img class='delete' src='stylesheets/images/delete.png' style='width:30px; height:30px;'/></td></tr>" );
+			$("#name").val('');
+        }
+		$("#add").button().click(function(event) {
+			$.ajax({
+			    type: "POST",
+			    url: "http://localhost:8080/web.cyberminer/api/v1/indices/noise",
+			    data: $("#name").val(),
+			    success: addNoiseWord,
+			    dataType: "text"
+			 });
+		});
+        
   });
   </script>
 </head>
@@ -141,6 +209,7 @@
 </div>
 <div id="navigationBar" class="toolbar">
 	<img class="kwic" src='stylesheets/images/kwic-logo.gif' width="200" height="50" style="margin-top: 10px; margin-bottom: 15px; float:right;">
+	<button id="config" style="height: 30px; width: 37px; margin-top: 10px; margin-bottom: 15px; float:right;"></button>
 </div>
 
 <div id="main">
@@ -154,6 +223,36 @@
 		<input type="text" id="input" value="" style="width:30%; height:32px;">
 		<button id="searchButton">Search</button>
 	</div>
+</div>
+
+<!-- DIALOG -->
+<div id="dialog-form" title="Search Configuration">
+    	<div style="width:100%; float:left; margin-top:15px;">
+			<p style="width:10%; float:left;"><b>Filter:</b></p>
+			<input type="text" name="name" id="name" value="" style="width:50%; float:left;">
+			<div id="buttons" style="width:30%; float:left;">
+			   	<button id="add">Add</button>
+			</div>
+    	</div>
+      
+		<div id="noise-words" class="ui-widget-content ui-corner-all">
+			<table id="noise-words-table" class="ui-widget ui-widget-content" style="width:100%; margin-top:40px;">
+				<thead style="width:100%">
+					<tr class="ui-widget-header">
+						<th style="width:90%">Noise Words</th>
+						<th style="width:10%">Del</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+		
+		<div style="width:100%; float:left; margin-top:30px;">
+			<p style="width:20%; float:left;"><b>Pagination:</b></p>
+			<input type="text" name="name" id="pagination" value="10" style="width:20%; float:left;">
+    	</div>
+ 
 </div>
 
 <!-- Descriptions/Links -->
